@@ -76,12 +76,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     </script>
     <style>
         header {
-        background-color: white;
-        color: black;
+        color: white;
+        background-color:#0C1446;
         padding:20px;
         text-align: center;
         font-weight: bolder;
         border-bottom: 2px solid black;
+        }
+        body{
+            color:white;
+            /* background-color:#DBF5F0; */
         }
         .myformContainer{
             display:flex;
@@ -92,7 +96,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         form{
             margin:20px;
             border-radius:10px;
-            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            background-color:#0C1446;
+            box-shadow: 0 4px 8px 0 #175873;
             padding:30px 20px;
             width:50%;
         }
@@ -116,10 +121,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             padding:5px 20px;
             margin:auto;
         }
+        .myalert{
+            margin-top:10px;
+        }
         @media screen and (max-width: 750px) {
             form{
             width:100%;
             }
+        }
+        .alert{
+            animation: shake 0.5s;
+            animation-iteration-count: 1;
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
     </style>
     <title>TAARANGANA</title>
@@ -129,9 +154,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     <header class="container-fluid">
     <h1>TAARANGANA REGISTRATION FORM</h1>
     </header>
-    
+
     <?php
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        echo '<div class="myalert">';
         if(count($error)>0)
         {
                 foreach($error as $err)
@@ -151,8 +177,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
                         <strong>success! </strong>Registered Successfully!!
                     </div>
                 </div>';
-        }   
-    }       
+        } 
+        echo '</div>';  
+    }    
     ?>
     <div class="container">
         <div class="myformContainer">
@@ -192,7 +219,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             </div>
         </div>
         
-        <input type="submit" name="Submit" class="btn btn-success" value="submit">
+        <input type="submit" name="Submit" class="btn btn-default" value="submit">
         
     </form>
         </div> 
