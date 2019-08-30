@@ -1,11 +1,9 @@
 <?php
-
-$nameErr=$numberErr=$emailErr="";
+$error=array();
 $team_name = $team_leader = $email = $phone_no = $no_of_members = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") 
 {
-	
-	if(isset($_POST["team_name"]) && isset($_POST["team_name"]) && isset($_POST["team_name"]) && isset($_POST["team_name"]))
+	if(isset($_POST["team_name"])!='' && isset($_POST["email"])!='' && isset($_POST["phone_no"])!='' && isset($_POST["no_of_members"])!='' && isset($_POST["team_leader"])!='')
 	{
         $team_name=$_POST["team_name"]; 
         $team_leader=$_POST["team_leader"];
@@ -13,52 +11,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         $no_of_members=$_POST["no_of_members"];
         $email=$_POST["email"];
 
-        if (!preg_match("/^[a-zA-Z]*$/",$team_name)||!filter_var($email, FILTER_VALIDATE_EMAIL)) 
+        if (!preg_match("/^[a-zA-Z ]*$/",$team_name)) 
         {
-            $nameErr = "Only letters and white space allowed"; 
-            $emailErr = "Invalid email format"; 
-            // $phoneErr= "Invalid Phone Number";
+            array_push($error,"Only letters and white space allowed");   
+            $team_name=""; 
         }
+        if (!preg_match("/^[a-zA-Z ]*$/",$team_leader)) 
+        {
+            array_push($error,"Only letters and white space allowed");   
+            $team_leader=""; 
+        }
+        if(!filter_var($email, FILTER_VALIDATE_EMAIL))
+        {
+            array_push($error,"Invalid email format"); 
+            $email="";   
+        }
+        if(!preg_match("/^[0-9]{10}$/",$phone_no))
+        {
+            array_push($error,"enter the valid phone number"); 
+            $phone_no="";   
+        }
+        if(count($error)==0){
 
-        else{
             include 'connect.php';
-
-            $sql1 = "select * from users where team_name =$team_name";
-            $result=mysqli_query($conn, $sql1gg);
-            if ($result->num_rows > 0) {
-                echo 'Team Name already Registered';
+            $sql = "select * from tarangana where team_name ='$team_name'";
+            $result=mysqli_query($conn, $sql);
+            $resultCheck=mysqli_num_rows($result);
+            if ($resultCheck > 0) {
+                array_push($error,'Team Name already Registered');
             }
 
             else{
-                $sql = "INSERT INTO tarangana(team_name,team_leader,no_of_members,email,phone_no)
-       VALUES ($team_name, $team_leader, $no_of_members,$email,$phone_no)";
-
-
-
-            if ($conn->query($sql) === TRUE) 
-            {
-                echo "New record created successfully";
-            } 
-            else 
-            {
-                 echo "Error: " . $sql . "<br>" . $conn->error;
-            }
+                $sql = "INSERT INTO `tarangana` (`team_name`, `team_leader`, `no_of_members`, `email`, `phone_no`) VALUES ('$team_name', '$team_leader','$no_of_members', '$email','$phone_no')";
+                $result=mysqli_query($conn, $sql);
+				if(!$result)
+				{
+                   array_push($error,"Something Went Wrong try again after sometime");
+                }
             }
         }
-
-         
-
     }
     else{
-        echo('Enter Correct details');
-        echo '<script type="text/javascript"> alert("Welcome at c-sharpcorner.com.")</script>';
+        array_push($error,"All Fields are mandatory");
     }
-   
-	
-
 }
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,63 +65,137 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-    <title>TAARANGANA</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $(".close").click(function(){
+                $("#myAlert").alert("close");
+            });
+        });
+    </script>
     <style>
-    .error {color: #FF0000;}
-    header{
-        width:100%;
-        height:auto;
-        padding:10px;
-       background-color:red;
-        text-align:center;
-        font-size:20px;
-    }
-    form{
-        margin:auto;
-    }
+        header {
+        background-color: white;
+        color: black;
+        padding:20px;
+        text-align: center;
+        font-weight: bolder;
+        border-bottom: 2px solid black;
+        }
+        .myformContainer{
+            display:flex;
+            justify-content: center;
+            align-items: center;
+            border-radius:10px;
+        }
+        form{
+            margin:20px;
+            border-radius:10px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            padding:30px 20px;
+            width:50%;
+        }
+        label{
+            font-size:18px;
+        }
+        .form-control{
+            height:40px;
+        }
+        .radio{
+            margin-left:10px;
+        }
+        .radio label
+        {
+            font-size:15px;
+        }
+        input[type=submit]
+        {
+            display:block;
+            text-transform:uppercase;
+            padding:5px 20px;
+            margin:auto;
+        }
+        @media screen and (max-width: 750px) {
+            form{
+            width:100%;
+            }
+        }
     </style>
+    <title>TAARANGANA</title>
+    
 </head>
 <body>
-    <header class="container">
-    TAARANGANA WEBSITE REGISTRATION FORM
+    <header class="container-fluid">
+    <h1>TAARANGANA REGISTRATION FORM</h1>
     </header>
     
+    <?php
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        if(count($error)>0)
+        {
+                foreach($error as $err)
+                {
+                    echo '<div class="container">
+                            <div class="alert alert-danger alert-dismissible" id="myAlert">
+                                <a href="#" class="close">&times;</a>
+                                <strong>error! </strong>'.$err.'
+                            </div>
+                        </div>';
+                }
+        }
+        else{
+            echo '<div class="container">
+                    <div class="alert alert-success alert-dismissible" id="myAlert">
+                        <a href="#" class="close">&times;</a>
+                        <strong>success! </strong>Registered Successfully!!
+                    </div>
+                </div>';
+        }   
+    }       
+    ?>
     <div class="container">
-    <form class="flex-container" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="POST">
-    <label for="team_name">1. Enter The Team Name</label>
-    <br>
-    <input type="text" name="team_name"  required id="1">
-    <br>
-    <label for="team_leader">2. Enter the Name of Team Leader</label>
-    <br>
-    <input type="text" name="team_leader" required id="2"><span class="error"> * <?php echo $nameErr;?></span>
-    <br>
-    <label for="email">3. Enter the Email Id</label>
-    <br>
-    <input type="email" name="email" required  id="3"><span class="error"> * <?php echo $emailErr;?></span>
-    <br>
-    <label for="phone_no">4. Enter your Phone Number</label>
-    <br>
-    <input type="text" name="phone_no"  required  id="4"> <span class="error"> * <?php echo $numberErr;?></span>
-    <br>
-    <label for="no_of_members">Enter the Number of Members in your Team.</label>
-    <br>
-    <input type="radio" name="no_of_members" checked value="1">&nbsp1
-    <br>
-    <input type="radio" name="no_of_members" value="2">&nbsp2 
-    <br>
-    <input type="radio" name="no_of_members" value="3">&nbsp3
-    <br>
-    <input type="radio" name="no_of_members" value="4">&nbsp4 
-    <br>   
+        <div class="myformContainer">
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="POST">
+        <div class="form-group">
+            <label id="team_name" for="team_name">Team Name</label>
+            <input type="text" name="team_name" class="form-control" value="<?php if(count($error)>0){ echo $team_name;}?>" placeholder="Enter Team name" required>
+        </div>
+        <div class="form-group">
+            <label id="team_leader" for="team_leader">Team Leader Name</label>
+            <input type="text" name="team_leader" required class="form-control" value="<?php if(count($error)>0){ echo $team_leader;}?>" placeholder="Enter Team Leader name">
+        </div>  
 
-    <input type="submit" name="Submit" value="submit">
-   
+        <div class="form-group">
+            <label id="email" for="email">Email</label>
+            <input type="email" name="email" required class="form-control" value="<?php if(count($error)>0){ echo $email;}?>"  placeholder="Enter email">
+        </div>
 
+        <div class="form-group">
+            <label id="phone_no" for="phone_no">Phone Number</label>
+            <input type="text" name="phone_no"  required class="form-control" <?php if(count($error)>0){ echo $phone_no;}?> placeholder="Enter phone number">
+        </div>  
+        
+        <div class="form-group">
+            <label id="no_of_members" for="no_of_members">Number of Members</label>
+            <div class="radio">
+            <label><input type="radio" name="no_of_members"  value="1">1</label>
+            </div>
+            <div class="radio">
+            <label><input type="radio" name="no_of_members"  value="2">2</label>
+            </div>
+            <div class="radio">
+            <label><input type="radio" name="no_of_members"  value="3">3</label>
+            </div>
+            <div class="radio">
+            <label><input type="radio" name="no_of_members"  value="4">4</label>
+            </div>
+        </div>
+        
+        <input type="submit" name="Submit" class="btn btn-success" value="submit">
+        
     </form>
-     
+        </div> 
     </div>
 </body>
 </html>
